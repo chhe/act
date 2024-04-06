@@ -21,3 +21,13 @@ jobs:
       - name: test
         run: | # Test only the new packages in this fork. Add more packages as needed.
           go test -v ./pkg/jobparser
+
+  conventional-commits:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.2
+
+    - name: conventional commits
+      uses: webiny/action-conventional-commits@v1.3.0
