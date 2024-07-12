@@ -19,8 +19,7 @@ jobs:
       - name: build
         run: go build -v ./...
       - name: test
-        run: | # Test only the new packages in this fork. Add more packages as needed.
-          go test -v ./pkg/jobparser
+        run: go test -v ./...
 
   conventional-commits:
     runs-on: ubuntu-latest
