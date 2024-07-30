@@ -192,7 +192,7 @@ func runActionImpl(step actionStep, actionDir string, remoteAction *remoteAction
 			if remoteAction == nil {
 				location = containerActionDir
 			}
-			return execAsDocker(ctx, step, actionName, location, remoteAction == nil)
+			return execAsDocker(ctx, step, actionName, location, remoteAction == nil, "entrypoint")
 		case model.ActionRunsUsingComposite:
 			if err := maybeCopyToActionDir(ctx, step, actionDir, actionPath, containerActionDir); err != nil {
 				return err
@@ -261,7 +261,7 @@ func removeGitIgnore(ctx context.Context, directory string) error {
 // TODO: break out parts of function to reduce complexicity
 //
 //nolint:gocyclo
-func execAsDocker(ctx context.Context, step actionStep, actionName string, basedir string, localAction bool) error {
+func execAsDocker(ctx context.Context, step actionStep, actionName string, basedir string, localAction bool, entrypointType string) error {
 	logger := common.Logger(ctx)
 	rc := step.getRunContext()
 	action := step.getActionModel()
@@ -337,10 +337,20 @@ func execAsDocker(ctx context.Context, step actionStep, actionName string, based
 		cmd = action.Runs.Args
 		evalDockerArgs(ctx, step, action, &cmd)
 	}
-	entrypoint := strings.Fields(eval.Interpolate(ctx, step.getStepModel().With["entrypoint"]))
+	entrypoint := strings.Fields(eval.Interpolate(ctx, step.getStepModel().With[entrypointType]))
 	if len(entrypoint) == 0 {
-		if action.Runs.Entrypoint != "" {
+		if entrypointType == "pre-entrypoint" && action.Runs.PreEntrypoint != "" {
+			entrypoint, err = shellquote.Split(action.Runs.PreEntrypoint)
+			if err != nil {
+				return err
+			}
+		} else if entrypointType == "entrypoint" && action.Runs.Entrypoint != "" {
 			entrypoint, err = shellquote.Split(action.Runs.Entrypoint)
+			if err != nil {
+				return err
+			}
+		} else if entrypointType == "post-entrypoint" && action.Runs.PostEntrypoint != "" {
+			entrypoint, err = shellquote.Split(action.Runs.PostEntrypoint)
 			if err != nil {
 				return err
 			}
@@ -508,12 +518,14 @@ func shouldRunPreStep(step actionStep) common.Conditional {
 func hasPreStep(step actionStep) common.Conditional {
 	return func(ctx context.Context) bool {
 		action := step.getActionModel()
-		return action.Runs.Using == model.ActionRunsUsingComposite ||
+		return (action.Runs.Using == model.ActionRunsUsingComposite) ||
 			((action.Runs.Using == model.ActionRunsUsingNode12 ||
 				action.Runs.Using == model.ActionRunsUsingNode16 ||
 				action.Runs.Using == model.ActionRunsUsingNode20 ||
 				action.Runs.Using == model.ActionRunsUsingGo) &&
-				action.Runs.Pre != "")
+				action.Runs.Pre != "") ||
+			(action.Runs.Using == model.ActionRunsUsingDocker &&
+				action.Runs.PreEntrypoint != "")
 	}
 }
 
@@ -526,30 +538,33 @@ func runPreStep(step actionStep) common.Executor {
 		stepModel := step.getStepModel()
 		action := step.getActionModel()
 
+		// defaults in pre steps were missing, however provided inputs are available
+		populateEnvsFromInput(ctx, step.getEnv(), action, rc)
+
+		// todo: refactor into step
+		var actionDir string
+		var actionPath string
+		var remoteAction *stepActionRemote
+		if remote, ok := step.(*stepActionRemote); ok {
+			actionPath = newRemoteAction(stepModel.Uses).Path
+			actionDir = fmt.Sprintf("%s/%s", rc.ActionCacheDir(), stepModel.UsesHash())
+			remoteAction = remote
+		} else {
+			actionDir = filepath.Join(rc.Config.Workdir, stepModel.Uses)
+			actionPath = ""
+		}
+
+		actionLocation := ""
+		if actionPath != "" {
+			actionLocation = path.Join(actionDir, actionPath)
+		} else {
+			actionLocation = actionDir
+		}
+
+		actionName, containerActionDir := getContainerActionPaths(stepModel, actionLocation, rc)
+
 		switch action.Runs.Using {
 		case model.ActionRunsUsingNode12, model.ActionRunsUsingNode16, model.ActionRunsUsingNode20:
-			// defaults in pre steps were missing, however provided inputs are available
-			populateEnvsFromInput(ctx, step.getEnv(), action, rc)
-			// todo: refactor into step
-			var actionDir string
-			var actionPath string
-			if _, ok := step.(*stepActionRemote); ok {
-				actionPath = newRemoteAction(stepModel.Uses).Path
-				actionDir = fmt.Sprintf("%s/%s", rc.ActionCacheDir(), stepModel.UsesHash())
-			} else {
-				actionDir = filepath.Join(rc.Config.Workdir, stepModel.Uses)
-				actionPath = ""
-			}
-
-			actionLocation := ""
-			if actionPath != "" {
-				actionLocation = path.Join(actionDir, actionPath)
-			} else {
-				actionLocation = actionDir
-			}
-
-			_, containerActionDir := getContainerActionPaths(stepModel, actionLocation, rc)
-
 			if err := maybeCopyToActionDir(ctx, step, actionDir, actionPath, containerActionDir); err != nil {
 				return err
 			}
@@ -560,7 +575,12 @@ func runPreStep(step actionStep) common.Executor {
 			rc.ApplyExtraPath(ctx, step.getEnv())
 
 			return rc.execJobContainer(containerArgs, *step.getEnv(), "", "")(ctx)
-
+		case model.ActionRunsUsingDocker:
+			location := actionLocation
+			if remoteAction == nil {
+				location = containerActionDir
+			}
+			return execAsDocker(ctx, step, actionName, location, remoteAction == nil, "pre-entrypoint")
 		case model.ActionRunsUsingComposite:
 			if step.getCompositeSteps() == nil {
 				step.getCompositeRunContext(ctx)
@@ -642,12 +662,14 @@ func shouldRunPostStep(step actionStep) common.Conditional {
 func hasPostStep(step actionStep) common.Conditional {
 	return func(ctx context.Context) bool {
 		action := step.getActionModel()
-		return action.Runs.Using == model.ActionRunsUsingComposite ||
+		return (action.Runs.Using == model.ActionRunsUsingComposite) ||
 			((action.Runs.Using == model.ActionRunsUsingNode12 ||
 				action.Runs.Using == model.ActionRunsUsingNode16 ||
 				action.Runs.Using == model.ActionRunsUsingNode20 ||
 				action.Runs.Using == model.ActionRunsUsingGo) &&
-				action.Runs.Post != "")
+				action.Runs.Post != "") ||
+			(action.Runs.Using == model.ActionRunsUsingDocker &&
+				action.Runs.PostEntrypoint != "")
 	}
 }
 
@@ -663,9 +685,11 @@ func runPostStep(step actionStep) common.Executor {
 		// todo: refactor into step
 		var actionDir string
 		var actionPath string
-		if _, ok := step.(*stepActionRemote); ok {
+		var remoteAction *stepActionRemote
+		if remote, ok := step.(*stepActionRemote); ok {
 			actionPath = newRemoteAction(stepModel.Uses).Path
 			actionDir = fmt.Sprintf("%s/%s", rc.ActionCacheDir(), stepModel.UsesHash())
+			remoteAction = remote
 		} else {
 			actionDir = filepath.Join(rc.Config.Workdir, stepModel.Uses)
 			actionPath = ""
@@ -678,7 +702,7 @@ func runPostStep(step actionStep) common.Executor {
 			actionLocation = actionDir
 		}
 
-		_, containerActionDir := getContainerActionPaths(stepModel, actionLocation, rc)
+		actionName, containerActionDir := getContainerActionPaths(stepModel, actionLocation, rc)
 
 		switch action.Runs.Using {
 		case model.ActionRunsUsingNode12, model.ActionRunsUsingNode16, model.ActionRunsUsingNode20:
@@ -692,6 +716,13 @@ func runPostStep(step actionStep) common.Executor {
 			rc.ApplyExtraPath(ctx, step.getEnv())
 
 			return rc.execJobContainer(containerArgs, *step.getEnv(), "", "")(ctx)
+
+		case model.ActionRunsUsingDocker:
+			location := actionLocation
+			if remoteAction == nil {
+				location = containerActionDir
+			}
+			return execAsDocker(ctx, step, actionName, location, remoteAction == nil, "post-entrypoint")
 
 		case model.ActionRunsUsingComposite:
 			if err := maybeCopyToActionDir(ctx, step, actionDir, actionPath, containerActionDir); err != nil {
