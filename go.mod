@@ -1,6 +1,6 @@
 module github.com/nektos/act
 
-go 1.22.6
+go 1.23.0
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
