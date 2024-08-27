@@ -5,5 +5,15 @@
   ],
   "postUpdateOptions": [
     "gomodTidy"
+  ],
+  "packageRules": [
+      {
+          "packageNames": [
+              "github.com/docker/cli",
+              "github.com/docker/docker"
+          ],
+          "groupName": "docker and docker cli",
+          "groupSlug": "docker-and-docker-cli"
+      }
   ]
 }
