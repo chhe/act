@@ -9,8 +9,8 @@ require (
 	github.com/andreaskoch/go-fswatch v1.0.0
 	github.com/creack/pty v1.1.23
 	github.com/distribution/reference v0.6.0
-	github.com/docker/cli v27.2.0+incompatible
-	github.com/docker/docker v27.2.0+incompatible
+	github.com/docker/cli v27.2.1+incompatible
+	github.com/docker/docker v27.2.1+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
