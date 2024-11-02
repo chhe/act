@@ -336,7 +336,7 @@ func TestRunEvent(t *testing.T) {
 				config.EventPath = eventFile
 			}
 
-			testConfigFile := filepath.Join(workdir, table.workflowPath, "config/config.yml")
+			testConfigFile := filepath.Join(workdir, table.workflowPath, "config.yml")
 			if file, err := os.ReadFile(testConfigFile); err == nil {
 				testConfig := &TestConfig{}
 				if yaml.Unmarshal(file, testConfig) == nil {

@@ -13,7 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/nektos/act/pkg/common"
-	"github.com/nektos/act/pkg/schema"
 )
 
 // Workflow is the structure of the files in .github/workflows
@@ -93,18 +92,6 @@ func (w *Workflow) OnSchedule() []string {
 	}
 
 	return []string{}
-}
-
-func (w *Workflow) UnmarshalYAML(node *yaml.Node) error {
-	// Validate the schema before deserializing it into our model
-	if err := (&schema.Node{
-		Definition: "workflow-root-strict",
-		Schema:     schema.GetWorkflowSchema(),
-	}).UnmarshalYAML(node); err != nil {
-		return err
-	}
-	type WorkflowDefault Workflow
-	return node.Decode((*WorkflowDefault)(w))
 }
 
 type WorkflowDispatchInput struct {
