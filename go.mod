@@ -9,7 +9,6 @@ require (
 	github.com/andreaskoch/go-fswatch v1.0.0
 	github.com/creack/pty v1.1.21
 	github.com/docker/cli v27.3.1+incompatible
-	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -39,6 +38,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0
+	github.com/distribution/reference v0.5.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	google.golang.org/protobuf v1.33.0
 )
@@ -51,7 +51,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
