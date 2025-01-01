@@ -216,7 +216,7 @@ func runActionImpl(step actionStep, actionDir string, remoteAction *remoteAction
 				rc.execJobContainer(execArgs, *step.getEnv(), "", ""),
 			)(ctx)
 		default:
-			return fmt.Errorf(fmt.Sprintf("The runs.using key must be one of: %v, got %s", []string{
+			return fmt.Errorf("The runs.using key must be one of: %v, got %s", []string{
 				model.ActionRunsUsingDocker,
 				model.ActionRunsUsingNode12,
 				model.ActionRunsUsingNode16,
@@ -224,7 +224,7 @@ func runActionImpl(step actionStep, actionDir string, remoteAction *remoteAction
 				model.ActionRunsUsingNode24,
 				model.ActionRunsUsingComposite,
 				model.ActionRunsUsingGo,
-			}, action.Runs.Using))
+			}, action.Runs.Using)
 		}
 	}
 }
@@ -508,7 +508,7 @@ func shouldRunPreStep(step actionStep) common.Conditional {
 }
 
 func hasPreStep(step actionStep) common.Conditional {
-	return func(ctx context.Context) bool {
+	return func(_ context.Context) bool {
 		action := step.getActionModel()
 		return action.Runs.Using.IsComposite() ||
 			(action.Runs.Using.IsNode() &&
@@ -642,7 +642,7 @@ func shouldRunPostStep(step actionStep) common.Conditional {
 }
 
 func hasPostStep(step actionStep) common.Conditional {
-	return func(ctx context.Context) bool {
+	return func(_ context.Context) bool {
 		action := step.getActionModel()
 		return action.Runs.Using.IsComposite() ||
 			(action.Runs.Using.IsNode() &&
