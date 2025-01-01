@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func getSysProcAttr(cmdLine string, tty bool) *syscall.SysProcAttr {
+func getSysProcAttr(cmdLine string, _ bool) *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{CmdLine: cmdLine, CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP}
 }
 
