@@ -591,6 +591,7 @@ type Step struct {
 	Uses             string    `yaml:"uses"`
 	Run              string    `yaml:"run"`
 	WorkingDirectory string    `yaml:"working-directory"`
+
 	// WorkflowShell is the shell really configured in the job, directly at step level or higher in defaults.run.shell
 	WorkflowShell      string            `yaml:"-"`
 	Shell              string            `yaml:"shell"`
