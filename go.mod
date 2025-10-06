@@ -8,8 +8,8 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/andreaskoch/go-fswatch v1.0.0
 	github.com/creack/pty v1.1.21
+	github.com/distribution/reference v0.6.0
 	github.com/docker/cli v28.5.0+incompatible
-	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker v28.5.0+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -48,7 +48,6 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
