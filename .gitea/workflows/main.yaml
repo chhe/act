@@ -1,0 +1,33 @@
+name: main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+      - name: vet checks
+        run: go vet -v ./...
+      - name: build
+        run: go build -v ./...
+      - name: test
+        run: | # Test only the new packages in this fork. Add more packages as needed.
+          go test -v ./pkg/jobparser
+
+  conventional-commits:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v5
+
+    - name: conventional commits
+      uses: webiny/action-conventional-commits@v1.3.0
