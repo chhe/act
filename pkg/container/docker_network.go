@@ -5,8 +5,7 @@ package container
 import (
 	"context"
 
-	"github.com/docker/docker/api/types"
-
+	"github.com/docker/docker/api/types/network"
 	"github.com/nektos/act/pkg/common"
 )
 
@@ -19,7 +18,7 @@ func NewDockerNetworkCreateExecutor(name string) common.Executor {
 		defer cli.Close()
 
 		// Only create the network if it doesn't exist
-		networks, err := cli.NetworkList(ctx, types.NetworkListOptions{})
+		networks, err := cli.NetworkList(ctx, network.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -32,7 +31,7 @@ func NewDockerNetworkCreateExecutor(name string) common.Executor {
 			}
 		}
 
-		_, err = cli.NetworkCreate(ctx, name, types.NetworkCreate{
+		_, err = cli.NetworkCreate(ctx, name, network.CreateOptions{
 			Driver: "bridge",
 			Scope:  "local",
 		})
@@ -54,21 +53,21 @@ func NewDockerNetworkRemoveExecutor(name string) common.Executor {
 
 		// Make shure that all network of the specified name are removed
 		// cli.NetworkRemove refuses to remove a network if there are duplicates
-		networks, err := cli.NetworkList(ctx, types.NetworkListOptions{})
+		networks, err := cli.NetworkList(ctx, network.ListOptions{})
 		if err != nil {
 			return err
 		}
 		// For Gitea, reduce log noise
 		// common.Logger(ctx).Debugf("%v", networks)
-		for _, network := range networks {
-			if network.Name == name {
-				result, err := cli.NetworkInspect(ctx, network.ID, types.NetworkInspectOptions{})
+		for _, nw := range networks {
+			if nw.Name == name {
+				result, err := cli.NetworkInspect(ctx, nw.ID, network.InspectOptions{})
 				if err != nil {
 					return err
 				}
 
 				if len(result.Containers) == 0 {
-					if err = cli.NetworkRemove(ctx, network.ID); err != nil {
+					if err = cli.NetworkRemove(ctx, nw.ID); err != nil {
 						common.Logger(ctx).Debugf("%v", err)
 					}
 				} else {
