@@ -25,7 +25,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/selinux v1.12.0
 	github.com/pkg/errors v0.9.1
-	github.com/rhysd/actionlint v1.7.7
+	github.com/rhysd/actionlint v1.7.8
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
@@ -94,6 +94,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.38.0 // indirect
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
