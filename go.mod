@@ -2,6 +2,8 @@ module github.com/nektos/act
 
 go 1.26
 
+toolchain go1.26.0
+
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Masterminds/semver v1.5.0
