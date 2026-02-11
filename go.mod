@@ -1,6 +1,8 @@
 module github.com/nektos/act
 
-go 1.25.7
+go 1.26
+
+toolchain go1.26.0
 
 require (
 	dario.cat/mergo v1.0.2
