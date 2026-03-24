@@ -23,7 +23,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/mattn/go-isatty v0.0.20
 	github.com/moby/buildkit v0.26.3
-	github.com/moby/patternmatcher v0.6.0
+	github.com/moby/patternmatcher v0.6.1
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/selinux v1.13.1
 	github.com/pkg/errors v0.9.1
